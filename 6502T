@@ -1,0 +1,65 @@
+*BASIC
+NEW
+AUTO
+REM>6502
+DIM code% 200
+OSWRCH=&FFEE
+OSWORD=&FFF1
+B=&70
+Z=&71
+FOR opt%=0 TO 3 STEP 3
+P%=code%
+[ OPT opt%
+\ set up screen mode, colours
+\ and define chars
+LDX #0
+.loop
+LDA vduset,X:JSR OSWRCH
+INX:CPX #vdusetend-vduset:BNE loop
+:
+\ seed random number generator
+LDA #1
+LDX #rndbuf MOD 256:LDY #rndbuf DIV 256
+JSR OSWORD
+:
+LDA #0:STA B
+.mainloop
+LDA B:EOR #128:STA B
+\ counter for columns along row
+LDY #40
+.rowloop
+LDA B:EOR #128:STA B
+\ get random number
+JSR rndz:LDA rndbuf:AND #1:STA Z
+\ set colours
+LDA #17:JSR OSWRCH
+LDA #130:SEC:SBC B:JSR OSWRCH
+LDA #17:JSR OSWRCH
+LDA Z:ASL A:SEC:ADC B:JSR OSWRCH
+\ print custom char
+LDA #241:SEC:SBC Z:JSR OSWRCH
+\ loop
+DEY:BNE rowloop
+JMP mainloop
+:
+.rndz
+CLC
+.rnd
+LDA rndbuf:ROL A:TAX:ADC rndbuf+2:STA rndbuf:STX rndbuf+2
+LDA rndbuf+1:TAX:ADC rndbuf+3:STA rndbuf+1:STX rndbuf+3
+RTS
+:
+.vduset
+EQUB 22:EQUB 1
+EQUB 19:EQUB 1:EQUD 4
+EQUB 19:EQUB 2:EQUD 6
+EQUB 23:EQUB 240:EQUB 1:EQUB 3:EQUB 7:EQUB 15:EQUB 31:EQUB 63:EQUB 127:EQUB 255
+EQUB 23:EQUB 241:EQUB 128:EQUB 192:EQUB 224:EQUB 240:EQUB 248:EQUB 252:EQUB 254:EQUB 255
+.vdusetend
+:
+.rndbuf
+EQUD 0:EQUB 0
+]
+NEXT
+PRINT "6502 assembled at &";~code%;"+";~P%-code%
+END

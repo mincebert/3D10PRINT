@@ -8,3 +8,4 @@ https://www.youtube.com/playlist?list=PL9bE3Lvj83bI5tpjhFOunU0Rzuuymp-Id
 Versions included are:
 
 * Acorn BBC BASIC 2 (as supplied with the BBC Micro) inc. crunched versions
+* 6502 using BBC BASIC assembler
