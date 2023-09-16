@@ -1,0 +1,59 @@
+*BASIC
+NEW
+AUTO
+REM>Z80
+DIM code% 200
+OSWRCH=&FFEE
+OSWORD=&FFF1
+FOR opt%=0 TO 3 STEP 3
+P%=code%
+[ OPT opt%
+\ set up screen mode, colours
+\ and define chars
+LD HL,vduset
+LD B,vdusetend-vduset
+.loop
+LD A,(HL):CALL OSWRCH
+INC HL
+DJNZ loop
+:
+\ seed random number generator
+LD A,1:LD HL,rndbuf:CALL OSWORD
+:
+LD D,0
+.mainloop
+LD A,D:XOR &80:LD D,A
+LD B,40
+.rowloop
+LD A,D:XOR &80:LD D,A
+\ get random number
+CALL rndz:LD A,(rndbuf):AND 1:LD E,A
+\ set colours
+LD A,17:CALL OSWRCH
+LD A,130:SUB D:CALL OSWRCH
+LD A,17:CALL OSWRCH
+LD A,E:SLA A:SCF:ADC A,D:CALL OSWRCH
+\ print custom char
+LD A,241:SUB E:CALL OSWRCH
+DJNZ rowloop
+JP mainloop
+:
+.rndz
+LD IX,rndbuf
+LD A,(IX):RLC A:LD C,A:ADD A,(IX+2):LD (rndbuf),A:LD (IX+2),C
+LD A,(IX+1):LD C,A:ADD A,(IX+3):LD (IX+1),A:LD (IX+3),C
+RET
+:
+.vduset
+DEFB 22:DEFB 1
+DEFB 19:DEFB 1:DEFW 4:DEFW 0
+DEFB 19:DEFB 2:DEFW 6:DEFW 0
+DEFB 23:DEFB 240:DEFB 1:DEFB 3:DEFB 7:DEFB 15:DEFB 31:DEFB 63:DEFB 127:DEFB 255
+DEFB 23:DEFB 241:DEFB 128:DEFB 192:DEFB 224:DEFB 240:DEFB 248:DEFB 252:DEFB 254:DEFB 255
+.vdusetend
+:
+.rndbuf
+DEFW 0:DEFW 0:DEFB 0
+]
+NEXT
+PRINT "Z80 assembled at &";~code%;"+";~P%-code%
