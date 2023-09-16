@@ -5,4 +5,4 @@ This is the source code to support the videos in the Least Significant Byte's 3D
 
 Versions included are:
 
-* Acorn BBC BASIC 2 (as supplied with the BBC Micro)
+* Acorn BBC BASIC 2 (as supplied with the BBC Micro) inc. crunched versions
