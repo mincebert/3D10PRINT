@@ -10,7 +10,7 @@ L%=code%+maxcode%
 [ OPT opt%
 \ seed random number generator
 MOV R0,#1:ADR R1,rndbuf:SWI "OS_Word"
-LDRB R4,rndbuf:LDRB R5,rndbuf+1:LDRB R6,rndbuf+2:LDRB R7,rndbuf+3
+LDR R4,rndbuf:LDRB R5,rndbuf+1
 :
 \ set up screen mode, colours
 \ and define chars
@@ -39,11 +39,12 @@ SUBS R2,R2,#1
 B mainloop
 :
 .rndz
-\ R4-7={rndbuf+0-3},R8=X
-MOV R4,R4,LSL #1:TST R4,R4,LSL #24:AND R4,R4,#255:MOV R8,R4
-ADCS R4,R4,R6:TST R4,R4,LSL #24:AND R4,R4,#255:MOV R6,R8
-MOV R8,R5
-ADC R5,R5,R7:AND R5,R5,#255:MOV R7,R8
+\ R4=rndbuf+{0-3},R5=rndbuf+4,R8=temp
+TST R5,R5,LSR #1
+MOVS R8,R4,RRX
+ADC R5,R5,R5
+EOR R8,R8,R4,LSL #12
+EOR R4,R8,R8,LSR #20
 MOV PC,LR
 :
 .vduset
