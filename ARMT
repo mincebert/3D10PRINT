@@ -8,43 +8,42 @@ FOR opt%=%1000 TO %1011 STEP %11
 P%=code%
 L%=code%+maxcode%
 [ OPT opt%
-\ set up screen mode, colours
-\ and define chars
-ADR R1,vduset:MOV R2,#0
-.loop
-LDRB R0,[R1,R2]:SWI "OS_WriteC"
-ADD R2,R2,#1:CMP R2,#vdusetend-vduset:BNE loop
-:
 \ seed random number generator
 MOV R0,#1:ADR R1,rndbuf:SWI "OS_Word"
+LDRB R4,rndbuf:LDRB R5,rndbuf+1:LDRB R6,rndbuf+2:LDRB R7,rndbuf+3
+:
+\ set up screen mode, colours
+\ and define chars
+ADR R1,vduset:ADR R2,vdusetend
+.loop
+LDRB R0,[R1],#1:SWI "OS_WriteC"
+CMP R1,R2:BNE loop
 :
 \ R1=B,R2=Y,R3=Z
 MOV R1,#0
 .mainloop
-EOR R1,R1,#128
+EORNE R1,R1,#128
 \ counter for columns along row
-MOV R2,#40
-.rowloop
-EOR R1,R1,#128
+MOVEQ R2,#40
 \ get random number
-BL rndz:LDRB R3,rndbuf:AND R3,R3,#1
+BL rndz:AND R3,R4,#1
 \ set colours
 MOV R0,#17:SWI "OS_WriteC"
-MOV R0,#130:SUB R0,R0,R1:SWI "OS_WriteC"
+RSB R0,R1,#130:SWI "OS_WriteC"
 MOV R0,#17:SWI "OS_WriteC"
-MOV R0,R3,LSL #1:ADD R0,R0,R1:ADD R0,R0,#1:SWI "OS_WriteC"
+ADD R0,R1,R3,LSL #1:ADD R0,R0,#1:SWI "OS_WriteC"
 \ print custom char
-MOV R0,#241:SUB R0,R0,R3:SWI "OS_WriteC"
+RSB R0,R3,#241:SWI "OS_WriteC"
 \ loop
-SUBS R2,R2,#1:BNE rowloop
+SUBS R2,R2,#1
 B mainloop
 :
 .rndz
-\ R0=A,R8=X,R9=temp
-LDRB R0,rndbuf:MOV R0,R0,LSL #1:TST R0,R0,LSL #24:AND R0,R0,#255:MOV R8,R0
-LDRB R9,rndbuf+2:ADC R0,R0,R9:TST R0,R0,LSL #24:STRB R0,rndbuf:STRB R8,rndbuf+2
-LDRB R0,rndbuf+1:MOV R8,R0
-LDRB R9,rndbuf+3:ADC R0,R0,R9:STRB R0,rndbuf+1:STRB R8,rndbuf+3
+\ R4-7={rndbuf+0-3},R8=X
+MOV R4,R4,LSL #1:TST R4,R4,LSL #24:AND R4,R4,#255:MOV R8,R4
+ADCS R4,R4,R6:TST R4,R4,LSL #24:AND R4,R4,#255:MOV R6,R8
+MOV R8,R5
+ADC R5,R5,R7:AND R5,R5,#255:MOV R7,R8
 MOV PC,LR
 :
 .vduset
