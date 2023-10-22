@@ -1,0 +1,71 @@
+*BASIC
+NEW
+AUTO
+REM>RV
+maxcode%=500
+DIM code% maxcode%-1
+OSWORD=&AC0003
+OSWRCH=&AC0004
+FOR opt%=%1000 TO %1011 STEP %11
+P%=code%
+L%=code%+maxcode%
+[ OPT opt%
+ALIGN
+.start
+; set up screen mode, colours
+; and define chars
+LA S0,vduset:LA S1,vdusetend
+LI A7,OSWRCH
+.loop
+LB A0,(S0):ECALL
+ADDI S0,S0,1:BNE S0,S1,loop
+:
+; seed random number generator
+LI A0,1:LA A1,rndbuf:LI A7,OSWORD:ECALL
+LA T0,rndbuf:LW S4,(T0)
+:
+; S1=B,S2=Y,S3=Z
+LI S1,0
+.mainloop
+XORI S1,S1,128
+; counter for columns along row
+LI S2,40
+.rowloop
+XORI S1,S1,128
+; get random number
+JAL rndz:ANDI S3,S4,1
+; set colours
+LI A7,OSWRCH
+LI A0,17:ECALL
+LI A0,130:SUB A0,A0,S1:ECALL
+LI A0,17:ECALL
+SLLI A0,S3,1:ADD A0,A0,S1:ADDI A0,A0,1:ECALL
+; print custom char
+LI A0,241:SUB A0,A0,S3:ECALL
+; loop
+ADDI S2,S2,-1:BNE S2,zero,rowloop
+J mainloop
+:
+.rndz
+; S4=rndbuf
+SLLI T0,S4,2:XOR T0,T0,S4
+SLLI T0,T0,1:XOR T0,T0,S4
+SLLI T0,T0,2:XOR T0,T0,S4
+ANDI T0,T0,1 << 5:SLLI T0,T0,26
+SRLI S4,S4,1:OR S4,S4,T0
+RET
+:
+.vduset
+EQUB 22:EQUB 1
+EQUB 19:EQUB 1:EQUD 4
+EQUB 19:EQUB 2:EQUD 6
+EQUB 23:EQUB 240:EQUB 1:EQUB 3:EQUB 7:EQUB 15:EQUB 31:EQUB 63:EQUB 127:EQUB 255
+EQUB 23:EQUB 241:EQUB 128:EQUB 192:EQUB 224:EQUB 240:EQUB 248:EQUB 252:EQUB 254:EQUB 255
+.vdusetend
+:
+.rndbuf
+EQUD 0:EQUB 0
+]
+NEXT
+PRINT "RISC-V assembled at &";~start;"+";~P%-start
+END

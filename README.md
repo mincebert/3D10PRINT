@@ -15,3 +15,4 @@ Versions included are:
 * 6502 using BBC BASIC assembler
 * Z80 using Richard Russell's Z80 BBC BASIC assembler
 * ARM using the Acorn ARM BBC BASIC assembler (on PiTubeDirect)
+* RV using the RISC-V BBC BASIC assembler (on PiTubeDirect)
