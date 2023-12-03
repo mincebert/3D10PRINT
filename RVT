@@ -22,7 +22,7 @@ ADDI S0,S0,1:BNE S0,S1,loop
 :
 ; seed random number generator
 LI A0,1:LA A1,rndbuf:LI A7,OSWORD:ECALL
-LA T0,rndbuf:LW S4,(T0)
+LW S4,(rndbuf)
 :
 ; S1=B,S2=Y,S3=Z
 LI S1,0
